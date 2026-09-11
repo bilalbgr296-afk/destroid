@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logic Quiz - Quiz Logika Essay</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{min-height:100vh;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;justify-content:center;align-items:center;padding:20px}
+.container{width:100%;max-width:800px}.card{background:#fff;border-radius:25px;padding:35px;box-shadow:0 15px 40px rgba(0,0,0,.25)}
+.header{text-align:center;margin-bottom:25px}.header h1{color:#5a3fc0;font-size:32px;margin-bottom:10px}.header p,.start-screen p{color:#666;line-height:1.6}
+.start-screen{text-align:center}.start-screen h2{margin-bottom:15px;color:#333}.start-screen p{margin-bottom:25px}
+button{border:none;border-radius:12px;padding:14px 25px;font-size:16px;font-weight:bold;cursor:pointer;transition:.3s}
+button:hover{transform:translateY(-2px)}.start-btn,.next-btn,.restart-btn{background:linear-gradient(90deg,#667eea,#764ba2);color:white}
+.info{display:flex;justify-content:space-between;gap:10px;background:#f3f1ff;color:#4b3b88;padding:15px;border-radius:12px;margin-bottom:20px;font-weight:bold}
+.progress-container{height:10px;background:#ddd;border-radius:10px;overflow:hidden;margin-bottom:25px}.progress-bar{height:100%;width:20%;background:linear-gradient(90deg,#667eea,#764ba2);transition:width .4s}
+.question{font-size:20px;color:#333;line-height:1.6;margin-bottom:20px;font-weight:bold}
+textarea{width:100%;min-height:160px;border:2px solid #ddd;border-radius:15px;padding:15px;font-size:16px;outline:none;resize:vertical;transition:.3s}
+textarea:focus{border-color:#667eea}.buttons{display:flex;justify-content:space-between;gap:10px;margin-top:20px}.prev-btn{background:#e5e5e5;color:#333}.next-btn{margin-left:auto}
+.hidden{display:none}.result{text-align:center}.score{font-size:55px;font-weight:bold;color:#5a3fc0;margin:20px 0}.message{color:#555;font-size:18px;line-height:1.5;margin-bottom:25px}
+.review{margin-top:30px;text-align:left}.review h3{margin-bottom:15px;color:#5a3fc0}.review-item{background:#f7f7f7;border-radius:12px;padding:15px;margin-bottom:12px}.review-item p{margin-top:8px;line-height:1.5;color:#555}
+@media(max-width:600px){.card{padding:20px}.header h1{font-size:26px}.question{font-size:18px}.info{flex-direction:column}.buttons{flex-direction:column}.next-btn{margin-left:0}button{width:100%}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="card start-screen" id="startScreen">
+<div class="header"><h1>🧠 LOGIC QUIZ</h1><p>Quiz Logika Essay</p></div>
+<h2>Siap Menguji Logikamu?</h2>
+<p>Jawablah setiap pertanyaan dengan jawaban dan alasan yang menurutmu paling logis. Terdapat 5 soal yang harus kamu selesaikan.</p>
+<button class="start-btn" onclick="startQuiz()">🚀 Mulai Quiz</button>
+</div>
+
+<div class="card hidden" id="quizScreen">
+<div class="header"><h1>🧠 LOGIC QUIZ</h1><p>Berpikir, Analisis, dan Jawab!</p></div>
+<div class="info"><span id="questionInfo">Soal 1 / 5</span><span>⏱️ <span id="timer">00:00</span></span></div>
+<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+<div class="question" id="questionText"></div>
+<textarea id="answer" placeholder="Tulis jawaban dan alasanmu di sini..."></textarea>
+<div class="buttons">
+<button class="prev-btn" id="prevBtn" onclick="previousQuestion()">⬅ Sebelumnya</button>
+<button class="next-btn" id="nextBtn" onclick="nextQuestion()">Selanjutnya ➡</button>
+</div>
+</div>
+
+<div class="card result hidden" id="resultScreen">
+<h1>🎉 Quiz Selesai!</h1><p>Kamu telah menyelesaikan semua soal.</p>
+<div class="score" id="score">0/100</div><div class="message" id="message"></div>
+<button class="restart-btn" onclick="restartQuiz()">🔄 Ulangi Quiz</button>
+<div class="review" id="review"></div>
+</div>
+</div>
+
+<script>
+const questions=[
+{question:"1. Jika semua kucing adalah hewan dan semua hewan membutuhkan makanan, apakah semua kucing membutuhkan makanan? Jelaskan alasanmu!",keywords:["ya","semua kucing","membutuhkan makanan"]},
+{question:"2. Mana yang lebih berat: 1 kilogram besi atau 1 kilogram kapas? Jelaskan alasanmu!",keywords:["sama","sama berat","1 kilogram"]},
+{question:"3. Andi lebih tinggi dari Budi. Budi lebih tinggi dari Candra. Siapakah yang paling tinggi? Jelaskan!",keywords:["andi"]},
+{question:"4. Jika hari ini hari Senin, hari apakah 10 hari lagi? Jelaskan cara menghitungnya!",keywords:["kamis"]},
+{question:"5. Ada 5 burung di atas pohon. Seorang pemburu menembak satu burung. Berapa burung yang kemungkinan masih berada di pohon? Jelaskan pemikiran logismu!",keywords:["0","nol","terbang"]},
+{question:"6. Semua siswa kelas A memakai seragam. Dika adalah siswa kelas A. Apakah Dika memakai seragam? Jelaskan!",keywords:["ya","memakai seragam"]},
+{question:"7. Sebuah jam menunjukkan pukul 03.00. Berapa sudut terkecil antara jarum jam dan jarum menit? Jelaskan!",keywords:["90","sembilan puluh"]},
+{question:"8. Jika 2 + 3 = 10 dan 3 + 4 = 21 berdasarkan pola tertentu, bagaimana kamu menentukan pola tersebut? Jelaskan cara berpikirmu!",keywords:["pola","perkalian","jumlah"]},
+{question:"9. Kamu memiliki dua ayah dan dua anak, tetapi jumlah orangnya hanya tiga. Bagaimana hal itu bisa terjadi?",keywords:["kakek","ayah","anak"]},
+{question:"10. Jika semua mawar adalah bunga dan sebagian bunga cepat layu, apakah semua mawar pasti cepat layu? Jelaskan!",keywords:["tidak","belum tentu","tidak semua"]},
+{question:"11. Sebuah mobil menempuh 60 km dalam 1 jam. Jika kecepatannya tetap, berapa kilometer yang ditempuh dalam 3 jam? Jelaskan!",keywords:["180"]},
+{question:"12. Kamu berada dalam perlombaan dan berhasil melewati peserta di posisi kedua. Sekarang kamu berada di posisi berapa? Jelaskan!",keywords:["kedua","2"]},
+{question:"13. Seorang petani memiliki 17 kambing. Semua kecuali 9 kambing hilang. Berapa kambing yang tersisa? Jelaskan!",keywords:["9","sembilan"]},
+{question:"14. Jika kemarin adalah hari Minggu, hari apakah lusa? Jelaskan langkah perhitungannya!",keywords:["rabu"]},
+{question:"15. Ada tiga kotak: merah, biru, dan hijau. Hanya satu berisi hadiah. Jika kamu diberi satu petunjuk yang benar, informasi seperti apa yang paling berguna untuk menemukan hadiah? Jelaskan strategi logikamu!",keywords:["petunjuk","informasi","eliminasi","kotak"]},
+{question:"16. Sebuah keluarga memiliki 4 anak laki-laki. Setiap anak laki-laki memiliki satu saudara perempuan yang sama. Berapa jumlah anak dalam keluarga tersebut? Jelaskan!",keywords:["5","lima"]},
+{question:"17. Jika A lebih tua dari B, dan B lebih tua dari C, siapa yang paling muda? Jelaskan!",keywords:["c","c adalah","paling muda"]},
+{question:"18. Kamu memiliki 3 apel dan mengambil 2 apel. Berapa apel yang kamu miliki sekarang? Jelaskan arti kata 'mengambil' pada soal!",keywords:["2","dua"]},
+{question:"19. Sebuah angka dikali 2 lalu ditambah 6 menghasilkan 20. Berapakah angka tersebut? Jelaskan langkah penyelesaiannya!",keywords:["7","tujuh"]},
+{question:"20. Ada sebuah ruangan dengan lampu yang awalnya mati. Kamu menekan sakelar satu kali, lalu sekali lagi. Bagaimana keadaan lampu pada akhirnya? Jelaskan berdasarkan konsep sakelar hidup dan mati!",keywords:["mati","off"]}
+];
+let currentQuestion=0,answers=new Array(questions.length).fill(""),seconds=0,timerInterval;
+
+function startQuiz(){document.getElementById("startScreen").classList.add("hidden");document.getElementById("quizScreen").classList.remove("hidden");loadQuestion();startTimer()}
+function loadQuestion(){
+document.getElementById("questionText").innerText=questions[currentQuestion].question;
+document.getElementById("questionInfo").innerText=`Soal ${currentQuestion+1} / ${questions.length}`;
+document.getElementById("answer").value=answers[currentQuestion];
+document.getElementById("progressBar").style.width=`${((currentQuestion+1)/questions.length)*100}%`;
+document.getElementById("prevBtn").style.visibility=currentQuestion===0?"hidden":"visible";
+document.getElementById("nextBtn").innerText=currentQuestion===questions.length-1?"Selesai 🎉":"Selanjutnya ➡";
+}
+function saveAnswer(){answers[currentQuestion]=document.getElementById("answer").value}
+function nextQuestion(){saveAnswer();if(currentQuestion<questions.length-1){currentQuestion++;loadQuestion()}else finishQuiz()}
+function previousQuestion(){saveAnswer();if(currentQuestion>0){currentQuestion--;loadQuestion()}}
+function startTimer(){clearInterval(timerInterval);timerInterval=setInterval(()=>{seconds++;const m=String(Math.floor(seconds/60)).padStart(2,"0"),s=String(seconds%60).padStart(2,"0");document.getElementById("timer").innerText=`${m}:${s}`},1000)}
+function finishQuiz(){
+saveAnswer();clearInterval(timerInterval);let score=0,reviewHTML="";
+questions.forEach((q,i)=>{const a=answers[i].toLowerCase();const correct=q.keywords.some(k=>a.includes(k));if(correct)score+=20;reviewHTML+=`<div class="review-item"><strong>Soal ${i+1}</strong><p><b>Jawaban kamu:</b><br>${answers[i]||"Belum dijawab"}</p><p>${correct?"✅ Jawaban terdeteksi sesuai.":"📝 Jawaban perlu ditinjau kembali."}</p></div>`});
+document.getElementById("quizScreen").classList.add("hidden");document.getElementById("resultScreen").classList.remove("hidden");
+document.getElementById("score").innerText=`${score}/100`;
+document.getElementById("message").innerText=score===100?"🔥 Luar biasa! Kemampuan logikamu sangat bagus!":score>=60?"👍 Bagus! Kamu sudah memiliki kemampuan berpikir logis yang cukup baik.":"💪 Jangan menyerah! Coba lagi dan baca setiap soal dengan lebih teliti.";
+document.getElementById("review").innerHTML="<h3>📋 Jawaban Kamu</h3>"+reviewHTML;
+}
+function restartQuiz(){currentQuestion=0;answers=new Array(questions.length).fill("");seconds=0;document.getElementById("timer").innerText="00:00";document.getElementById("resultScreen").classList.add("hidden");document.getElementById("startScreen").classList.remove("hidden")}
+</script>
+</body>
+</html>
